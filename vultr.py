@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import json
 import requests
@@ -49,7 +48,7 @@ def destroy_duplicated_script(name):
     resp_data = list_startupscript()
     for scriptid in resp_data:
         if resp_data[scriptid]['name'] == name:
-            print 'Destroy duplicated startupscript: {}.'.format(name)
+            print('Destroy duplicated startupscript: {}.'.format(name))
             destroy_startupscript(scriptid)
 
 
@@ -93,7 +92,7 @@ def destroy_duplicated_server(label):
     resp_data = list_server()
     for subid in resp_data:
         if resp_data[subid]['label'] == label:
-            print 'Destroy duplicated server: {}.'.format(label)
+            print('Destroy duplicated server: {}.'.format(label))
             destroy_server(subid)
 
 
@@ -108,7 +107,7 @@ def create_server(dcid, vpsplanid, osid, scriptid,
                 'SSHKEYID': sshkeyid,
                 'hostname': hostname,
                 'label': label}
-    req_data = {k: v for k, v in req_data.iteritems() if v}
+    req_data = {k: v for k, v in req_data.items() if v}
     resp = make_request(method, url, data=req_data)
     if resp.status_code != 200:
         raise Exception(resp.status_code)
@@ -126,30 +125,28 @@ def get_server_info(subid):
 def generate_startup_script():
     content = ('#!/bin/sh\n'
                'apt-get install -y shadowsocks\n'
+               'mkdir -p /root/bin\n'
                'mkdir -p /root/log\n'
+               'mkdir -p /root/etc\n'
+               'mkdir -p /root/tmp\n'
                'wget https://github.com/xtaci/kcptun/releases/download/'
-               'v20170120/kcptun-linux-amd64-20170120.tar.gz '
-               '-O /root/kcptun-linux-amd64-20170120.tar.gz\n'
-               'tar -zxf /root/kcptun-linux-amd64-20170120.tar.gz -C /root\n'
-               '/root/server_linux_amd64 '
-               '--listen ":{kcptun_listen}" --target "{kcptun_target}" '
-               '--key "{kcptun_key}" --crypt "{kcptun_crypt}" '
-               '--mode "{kcptun_mode}" > /root/log/kcptun.log 2>&1 &\n'
-               '/usr/bin/ssserver -s "{ssserver_addr}" -p {ssserver_port} '
-               '-k "{ssserver_password}" -m "{ssserver_method}" '
-               '-t {ssserver_timeout} --workers {ssserver_workers} -q '
-               '> /root/log/ssserver.log 2>&1\n')
-    return content.format(ssserver_addr=Config.SSSERVER_ADDR,
-                          ssserver_port=Config.SSSERVER_PORT,
-                          ssserver_password=Config.SSSERVER_PASSWORD,
-                          ssserver_method=Config.SSSERVER_METHOD,
-                          ssserver_timeout=Config.SSSERVER_TIMEOUT,
-                          ssserver_workers=Config.SSSERVER_WORKERS,
-                          kcptun_listen=Config.KCPTUN_LISTEN,
-                          kcptun_target=Config.KCPTUN_TARGET,
-                          kcptun_key=Config.KCPTUN_KEY,
-                          kcptun_crypt=Config.KCPTUN_CRYPT,
-                          kcptun_mode=Config.KCPTUN_MODE)
+               'v20170120/kcptun-linux-amd64-20170120.tar.gz -O '
+               '/root/tmp/kcptun-linux-amd64-20170120.tar.gz\n'
+               'tar -zxf /root/tmp/kcptun-linux-amd64-20170120.tar.gz -C '
+               '/root/bin\n'
+               'wget https://gist.githubusercontent.com/0x4ec7/'
+               '383ab46cfcbbdcc1d30f85e51ade895c/raw/'
+               'b2b45faf65d0eca6e104c35451471acfe14f5b15/kcptun.json -O '
+               '/root/etc/kcptun.json\n'
+               'wget https://gist.githubusercontent.com/0x4ec7/'
+               '8ced15075e9d33773e5020b69df3669b/raw/'
+               '7b1106dde0be577fca9b466b7e132934e8b6075d/shadowsocks.json -O '
+               '/root/etc/shadowsocks.json\n'
+               '/root/bin/server_linux_amd64 -c /root/etc/kcptun.json > '
+               '/root/log/kcptun.log 2>&1 &\n'
+               '/usr/bin/ssserver -c /root/etc/shadowsocks.json > '
+               '/root/log/shadowsocks.log 2>&1\n')
+    return content
 
 
 def update_shadowsocksx_ng_profile(ip):
@@ -214,16 +211,16 @@ def main():
     sshkey_name = Config.SSHKEY_NAME
     script_content = generate_startup_script()
     destroy_duplicated_script(script_name)
-    print 'Creating startupscript...'
+    print('Creating startupscript...')
     scriptid = create_startupscript(script_name, script_content)
-    print 'Startupscript created, scriptid: {}.'.format(scriptid)
+    print('Startupscript created, scriptid: {}.'.format(scriptid))
     sshkeyid = None
     if sshkey_name:
-        print 'Fetching sshkeyid of {}...'.format(sshkey_name)
+        print('Fetching sshkeyid of {}...'.format(sshkey_name))
         sshkeyid = get_sshkeyid(sshkey_name)
-        print 'SSHKEY ID: {}.'.format(sshkeyid)
+        print('SSHKEY ID: {}.'.format(sshkeyid))
     destroy_duplicated_server(Config.LABEL)
-    print 'Creating server...'
+    print('Creating server...')
     subid = create_server(Config.DCID,
                           Config.VPSPLANID,
                           Config.OSID,
@@ -231,7 +228,7 @@ def main():
                           sshkeyid=sshkeyid,
                           hostname=Config.HOSTNAME,
                           label=Config.LABEL)
-    print 'Server created, SUBID: {}.'.format(subid)
+    print('Server created, SUBID: {}.'.format(subid))
     power_status = 'running'
     while True:
         info = get_server_info(subid)
@@ -240,12 +237,12 @@ def main():
             continue
         if power_status != info.get('power_status'):
             power_status = info.get('power_status')
-            print 'Status: {}'.format(power_status)
+            print('Status: {}'.format(power_status))
             if power_status == 'running':
                 break
-    print 'Server main ip: {}.'.format(ip)
-    print 'Running ssserver at {}:{}'.format(ip, Config.SSSERVER_PORT)
-    print 'Running kcptun server at {}:{}'.format(ip, Config.KCPTUN_LISTEN)
+    print('Server main ip: {}.'.format(ip))
+    print('Running ssserver at {}:{}'.format(ip, Config.SSSERVER_PORT))
+    print('Running kcptun server at {}:{}'.format(ip, Config.KCPTUN_LISTEN))
     update_shadowsocksx_ng_profile(ip)
     restart_shadowsocksx_ng()
 
