@@ -19,7 +19,7 @@ def create_startupscript(name, script):
                 'script': script}
     resp = make_request(method, url, data=req_data)
     if resp.status_code != 200:
-        raise Exception(resp.status_code)
+        raise Exception(resp.status_code, resp.content)
     resp_data = resp.json()
     scriptid = resp_data.get('SCRIPTID')
     return scriptid
@@ -30,7 +30,7 @@ def list_startupscript():
     method = 'GET'
     resp = make_request(method, url)
     if resp.status_code != 200:
-        raise Exception(resp.status_code)
+        raise Exception(resp.status_code, resp.content)
     resp_data = resp.json()
     return resp_data
 
@@ -41,7 +41,7 @@ def destroy_startupscript(scriptid):
     req_data = {'SCRIPTID': scriptid}
     resp = make_request(method, url, data=req_data)
     if resp.status_code != 200:
-        raise Exception(resp.status_code)
+        raise Exception(resp.status_code, resp.content)
 
 
 def destroy_duplicated_script(name):
@@ -57,7 +57,7 @@ def list_sshkey():
     method = 'GET'
     resp = make_request(method, url)
     if resp.status_code != 200:
-        raise Exception(resp.status_code)
+        raise Exception(resp.status_code, resp.content)
     resp_data = resp.json()
     return resp_data
 
@@ -74,7 +74,7 @@ def list_server():
     method = 'GET'
     resp = make_request(method, url)
     if resp.status_code != 200:
-        raise Exception(resp.status_code)
+        raise Exception(resp.status_code, resp.content)
     resp_data = resp.json()
     return resp_data
 
@@ -85,7 +85,7 @@ def destroy_server(subid):
     req_data = {'SUBID': subid}
     resp = make_request(method, url, data=req_data)
     if resp.status_code != 200:
-        raise Exception(resp.status_code)
+        raise Exception(resp.status_code, resp.content)
 
 
 def destroy_duplicated_server(label):
@@ -110,7 +110,7 @@ def create_server(dcid, vpsplanid, osid, scriptid,
     req_data = {k: v for k, v in req_data.items() if v}
     resp = make_request(method, url, data=req_data)
     if resp.status_code != 200:
-        raise Exception(resp.status_code)
+        raise Exception(resp.status_code, resp.content)
     resp_data = resp.json()
     subid = resp_data['SUBID']
     return subid

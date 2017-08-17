@@ -9,9 +9,9 @@ class BaseConfig(object):
     SCRIPT_NAME = 'SSSERVER'
     SSHKEY_NAME = ''  # optional, set at instance.config.Config
     # https://api.vultr.com/v1/regions/list
-    DCID = 40  # Los Angeles: 5, Tokyo: 25, Singapore: 40
+    DCID = 25  # Los Angeles: 5, Tokyo: 25, Singapore: 40
     VPSPLANID = 29  # $5/mo
-    OSID = 231  # Ubuntu 16.10 x64
+    OSID = 241  # Ubuntu 17.04 x64
 
     # ssserver config
     SSSERVER_ADDR = '0.0.0.0'
